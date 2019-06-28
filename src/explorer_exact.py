@@ -1,74 +1,68 @@
 from Config import *
-from Utils import term_query_cleanerstemmer, txt_pages_cleanerstemmer, return_pdf_text_pp
+from Utils import cleaner, get_pdf_text_pp
 import os
 import pandas as pd
+import regex as re
 
-def get_term_query(excel_path, col=1, sublist_sep=','):
+def get_clean_txt_pdf_pp(pdf_path):
+    text_pp = get_pdf_text_pp(pdf_path)
+    clean_text_pp = [cleaner(text) for text in text_pp]
+    return clean_text_pp
+
+def get_search_terms(excel_path, col=0, sublist_sep=','):
     '''function that selects column in input excel
     for associated search queries and formats it
     to the appropriate search format.
     output is a vector with the term locked to index
-    in dataframe.'''
+    in dictionary.'''
     df = pd.read_excel(excel_path)
     terms_unformatted = df[df.columns[col]].to_list()
 
     '''if multiple options, make sublist'''
     term_query = []
-    for term in terms_unformatted:
-        term = term.split(',')
-        term_query.append(term)
-    stemkey_query = term_query_cleanerstemmer(term_query)
+    for terms in terms_unformatted:
+        terms = terms.split(sublist_sep)
+        term_query.append(terms)
 
     '''make the vector associated with query'''
-    stemkey_index_vector = {}
+    term_index_vector = {}
     counter = 0
-    for item in stemkey_query:
-        for subitem in item:
-            stemkey_index_vector[subitem] = counter
+    for terms in term_query:
+        for term in terms:
+            term_index_vector[str(term)] = counter
         counter += 1
+    return term_index_vector
 
-    '''make the stem to original term vector'''
-    stemkey_term_vector = {}
-    for i in range(len(stemkey_query)):
-        for i2 in range(len(stemkey_query[i])):
-            stemkey_term_vector[stemkey_query[i][i2]] = term_query[i][i2]
-        counter += 1
-    return stemkey_index_vector, stemkey_term_vector
-
-def get_clean_pages(pdf_path, stem=True):
-    '''returns a list of string pages,
-    cleaned and stemmed (if true)'''
-    text_pp = return_pdf_text_pp(pdf_path)
-    text_pp = txt_pages_cleanerstemmer(text_pp, stem)
-    return text_pp
-
-def get_term_matches_pp(stemkey_index_vector, text_pp):
+def get_term_matches_pp(term_index_vector, text_pp):
     '''matches the terms to the pages
     returns a list of term matches per page.
     shallow duplicates are discarded
     (alternative representations of same
     concepts are retained)'''
-    terms = [term for term in stemkey_index_vector]
+    terms = [term for term in term_index_vector]
     terms_pp = []
     for page in text_pp:
         this_page_terms = []
-        for term in terms:
+        for term in terms
             if term in page:
                 if term not in this_page_terms:
                     this_page_terms.append(term)
         terms_pp.append(this_page_terms)
     return terms_pp
 
-def get_term_indexes_pp(terms_pp, stemkey_index_vector):
+def get_term_indexes_pp(terms_pp, term_index_vector):
     term_indexes_pp = []
     for page in terms_pp:
         page_indexes = []
         for term in page:
-            page_indexes.append(stemkey_index_vector[term])
+            page_indexes.append(term_index_vector[term])
         term_indexes_pp.append(page_indexes)
     return term_indexes_pp
 
 def get_array_first_occurences(term_indexes_pp):
+    '''A feature of StatAssist is to only display
+    the fist occurence of a term in the sidebar
+    with a explanation, here this is evaluated'''
     occured_indexes = []
     array_fo = []
     for page in term_indexes_pp:
@@ -84,20 +78,18 @@ def get_array_first_occurences(term_indexes_pp):
 
 def create_story_ref(pdf_path, excel_path):
     '''returns package in dictionary format'''
-    stemkey_index_vector = get_term_query(excel_path)
-    text_pp = get_clean_pages(pdf_path, stem=False)
-    text_stemmed_pp = get_clean_pages(pdf_path)
-    term_matches_pp = get_term_matches_pp(stemkey_index_vector, text_pp)
-    term_indexes_pp = get_term_indexes_pp(term_matches_pp, stemkey_index_vector)
+    term_index_vector = get_search_terms(excel_path)
+    text_pp = get_clean_txt_pdf_pp(pdf_path)
+    term_pp = get_term_matches_pp(term_index_vector, text_pp)
+    term_indexes_pp = get_term_indexes_pp(term_pp, term_index_vector)
     array_first_occurences = get_array_first_occurences(term_indexes_pp)
-    terms = [term for term in stemkey_index_vector]
+
+    terms = [term for term in term_index_vector]
     story_ref = {
-    'terms_pp': term_matches_pp,
+    'terms_pp': term_pp,
     'index_pp': term_indexes_pp,
     'first': array_first_occurences,
-    'term_vector': stemkey_index_vector,
-    'pages_stemmed': text_stemmed_pp,
-    'pages': text_pp
+    'stem_vector': term_index_vector,
     }
     return story_ref
 
