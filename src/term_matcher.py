@@ -1,11 +1,11 @@
 from Config import *
-from Utils import cleaner, get_pdf_text_pp
+from Utils import cleaner, get_plumber_pdf_txt_pp
 import os
 import pandas as pd
 import regex as re
 
 def get_clean_txt_pdf_pp(pdf_path):
-    text_pp = get_pdf_text_pp(pdf_path)
+    text_pp = get_plumber_pdf_txt_pp(pdf_path)
     clean_text_pp = [cleaner(text) for text in text_pp]
     return clean_text_pp
 
@@ -43,7 +43,7 @@ def get_term_matches_pp(term_index_vector, text_pp):
     terms_pp = []
     for page in text_pp:
         this_page_terms = []
-        for term in terms
+        for term in terms:
             if term in page:
                 if term not in this_page_terms:
                     this_page_terms.append(term)

@@ -1,0 +1,1 @@
+'''This is a seperate module which 1. takes input pivot words 2. takes corpus texts 3. makes bi, tri and tetragrams from corpus items and builds vector (without counts) 4. based on pivot words returns all grams with the pivot words included. Thereby presenting all respective contexts the pivot word occurs in'''
