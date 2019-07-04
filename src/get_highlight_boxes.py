@@ -1,1 +1,0 @@
-'''This module finds all text boundary boxes associated with the found words by term_matcher and links these to the output provided by pdf_handler. It returns the respective coordinates of the found words boxes per page'''
