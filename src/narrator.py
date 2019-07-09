@@ -2,7 +2,7 @@ from src.Config import excel_path, pdf_path
 from src.translator import translate_for_narration
 import pandas as pd
 
-'''
+"""
 should format information into a card containing:
  ___________________________
 |3 found matches    on page |--> equal to the len of index in dict
@@ -17,23 +17,64 @@ should format information into a card containing:
 |IMAGE?                     |-->path to image found in [5]
 |___________________________|
 
-'''
+"""
+
 
 def narrate_translation(pdf_path, excel_path):
     translation = translate_for_narration(pdf_path, excel_path)
     statguide = pd.read_excel(excel_path)
-    term_guide_index = 1
-    category_guide_index = 2
-    what_guide_index = 3
-    important_guide_index = 4
-    image_guide_index = 5
-    narrative = [[] for page in translation]
+    statguide_columns = statguide.columns
+    term_column = statguide_columns[1]
+    category_column = statguide_columns[2]
+    what_column = statguide_columns[3]
+    important_column = statguide_columns[4]
+    image_column = statguide_columns[5]
+
+    narrative = []
+
     for page in translation:
-        for term in page:
-            term = page[term]
-            found_occurences = len(term)
-            occurences_carditem = str(found_occurences) + "matches on page for"
-            title_term_carditem = statguide[]
+        this_page_narrative = []
+        for term_index in page:
+            terms = page[term_index]
+            found_occurences = len(terms)
+            occurences_carditem = str(found_occurences) + " matches on page for"
+            title_term_carditem = statguide[term_column][term_index]
+            category_carditem = statguide[category_column][term_index]
+            what_carditem = statguide[what_column][term_index]
+            important_carditem = statguide[important_column][term_index]
+            image_carditem = statguide[image_column][term_index]
+
+            coordinates = []
+            first_occurences = []
+            for term in terms:
+                first_occurences.append(term[1])
+                coordinates.append(term[2])
+
+            if any(first_occurences):
+                first_page_occurrence = True
+            else:
+                first_page_occurrence = False
+
+            # Here the formatting for the output card and highlight gets established
+            term_card_content = {
+                'first': first_page_occurrence,
+                'len_matches': occurences_carditem,
+                'term': title_term_carditem,
+                'category': category_carditem,
+                'what': what_carditem,
+                'image': image_carditem,
+            }
+
+            highlights = tuple(zip(first_occurences, coordinates))
+
+            cardcontent_highlights = {
+                'term_card_content': term_card_content,
+                'term_highlights': highlights,
+            }
+            this_page_narrative.append(cardcontent_highlights)
+        narrative.append(this_page_narrative)
+
+    return narrative
 
 
 narrate_translation(pdf_path, excel_path)
