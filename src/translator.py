@@ -2,7 +2,6 @@
 narrator module. It specifies on which pages terms occur and where
 said term is located'''
 
-from src.Config import excel_path, pdf_path
 from src.matcher import get_articledict_and_matchesdict
 
 def remove_duplicates_list(lst):
@@ -53,8 +52,8 @@ def translate_for_narration(pdf_path, excel_path):
     page_matches = article_dict["page_matches"]
     matches = article_dict["matches"]
     first_occurences = article_dict["first"]
-    # narrative has structure: {'search_term_index':(fo, cords)}
-    narrative = [{} for i in range(total_pages+1)]
+    # translation has structure: {'search_term_index':(fo, cords)}
+    translation = [{} for i in range(total_pages+1)]
     for i in range(len(matches)):
         match = matches[i]
 
@@ -89,21 +88,19 @@ def translate_for_narration(pdf_path, excel_path):
         if multiple_pages:
             for page in range(len(this_match_page_matches)):
                 plotitem = (article_match[i][page], fo, cords[i][page])
-                if search_match not in narrative[page]:
-                    narrative[page][search_match] = [plotitem]
+                if search_match not in translation[page]:
+                    translation[page][search_match] = [plotitem]
                 else:
-                    narrative[page][search_match].append(plotitem)
+                    translation[page][search_match].append(plotitem)
         else:
             page = this_match_page_matches[0]
             cords = cord_evaluator(cords)
             article_match = " ".join(article_match)
             plotitem = (article_match, fo, cords)
-            if search_match not in narrative[page]:
-                narrative[page][search_match] = [plotitem]
+            if search_match not in translation[page]:
+                translation[page][search_match] = [plotitem]
             else:
-                narrative[page][search_match].append(plotitem)
-    # narrative has structure: {'search_term_index':(fo, cords)}
+                translation[page][search_match].append(plotitem)
+    # translation has structure: {'search_term_index':(fo, cords)}
     # with multiple dictionaries, indexed to page
-    return narrative
-
-translate_for_narration(pdf_path, excel_path)
+    return translation

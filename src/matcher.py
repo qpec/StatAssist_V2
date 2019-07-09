@@ -2,8 +2,6 @@
 search_queries in the first column. The matched words or collocations
 will be returned in a dictionary'''
 
-from src.Config import excel_path, pdf_path
-
 from src.parser import analysis
 from nltk import SnowballStemmer
 import pandas as pd
@@ -118,6 +116,3 @@ def get_articledict_and_matchesdict(pdf_path, excel_path):
     article_dict["first"] = match_occur_dict["first"]
     article_dict["index_searchterms"] = match_occur_dict["index_searchterms"]
     return article_dict, match_occur_dict
-
-
-x=get_articledict_and_matchesdict(pdf_path, excel_path)
