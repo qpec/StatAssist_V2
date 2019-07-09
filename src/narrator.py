@@ -1,4 +1,3 @@
-from src.Config import excel_path, pdf_path
 from src.translator import translate_for_narration
 import pandas as pd
 
@@ -75,6 +74,3 @@ def narrate_translation(pdf_path, excel_path):
         narrative.append(this_page_narrative)
 
     return narrative
-
-
-narrate_translation(pdf_path, excel_path)
