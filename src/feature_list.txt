@@ -1,0 +1,4 @@
+1. in the footer of the page a watermark should be visible displaying the user
+who used the program
+
+2. the first occurence of a term should receive a seperate color highlight

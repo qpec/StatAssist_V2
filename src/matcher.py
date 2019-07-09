@@ -2,7 +2,10 @@
 search_queries in the first column. The matched words or collocations
 will be returned in a dictionary'''
 
+from src.Config import excel_path, pdf_path
+
 from src.parser import analysis
+from nltk import SnowballStemmer
 import pandas as pd
 import regex as re
 
@@ -39,21 +42,8 @@ def subfinder(mylist, pattern):
     matches = []
     for i in range(len(mylist)):
         if mylist[i] == pattern[0] and mylist[i:i+len(pattern)] == pattern:
-            matches.append([i, i+len(pattern)])
+            matches.append([i, i+len(pattern)-1])
     return matches
-
-
-def get_subwords_from_articleterms(article_words):
-    subwordindex_wordindex = {}
-    article_subwords = []
-    for i in range(len(article_words)):
-        term = article_words[i]
-        subwords = re.split("[^a-z]", term)
-        for subword in subwords:
-            article_subwords.append(subword)
-            subwordindex_wordindex[len(article_subwords)-1] = i
-    return article_subwords, subwordindex_wordindex
-
 
 def remove_duplicates_list(lst):
     clean_list = []
@@ -62,54 +52,58 @@ def remove_duplicates_list(lst):
             clean_list.append(item)
     return clean_list
 
-
 def get_term_matches_pp(search_term_index_vector, article_dict):
-    '''matches the search_terms to the pages
-    returns a list of term matches per page.
-    shallow duplicates are discarded
-    (alternative representations of same
-    concepts are retained)'''
-    search_terms = [term.lower() for term in search_term_index_vector]
-    article_words = [word.lower() for word in article_dict["words"]]
-    article_subwords, subwordindex_wordindex = get_subwords_from_articleterms(
-        article_words)
+    '''matches the search_terms to the input text
+    returns a list of term index matches.'''
+    stemmer = SnowballStemmer('english')
+    search_terms = [stemmer.stem(term.lower()) for term in search_term_index_vector]
+    article_words = [stemmer.stem(word.lower()) for word in article_dict["words"]]
+    wordindex_to_page = article_dict['pages']
+    page_matches = []
     term_article_index_matches = []
-    for term in search_terms:
-        term = term.split()
-        group_matches = subfinder(article_subwords, term)
+    term_searchindex_article_matches = []
+    for i in range(len(search_terms)):
+        term = search_terms[i].split()
+        group_matches = subfinder(article_words, term)
         if group_matches:
             for match in group_matches:
                 this_match_indexes = []
+                this_match_pages = []
                 for index in match:
-                    original_index = subwordindex_wordindex[index]
-                    this_match_indexes.append(original_index)
+                    this_match_indexes.append(index)
+                    this_match_pages.append(wordindex_to_page[index])
                 this_match_indexes = remove_duplicates_list(this_match_indexes)
                 term_article_index_matches.append(this_match_indexes)
-    return term_article_index_matches
+                page_matches.append(this_match_pages)
+                term_searchindex_article_matches.append(i)
+    return term_article_index_matches, term_searchindex_article_matches, page_matches
 
 
-def get_array_first_occurences(term_article_index_matches):
+def get_array_first_occurences(term_searchindex_article_matches):
     '''A feature of StatAssist is to only display
     the fist occurence of a term in the sidebar
     with a explanation, here this is evaluated'''
+    occurred = []
     mirror_first_ocurrences = []
-    for match in term_article_index_matches:
-        mirror_first_ocurrences.append([1])
-        if len(term_article_index_matches) > 1:
-            for i in range(1, len(match)):
-                mirror_first_ocurrences[-1].append(0)
+    for match in term_searchindex_article_matches:
+        if match not in occurred:
+            mirror_first_ocurrences.append(True)
+            occurred.append(match)
+        else:
+            mirror_first_ocurrences.append(False)
     return mirror_first_ocurrences
 
 
 def get_match_occur_dict(article_dict, search_term_index_vector):
     '''returns package in dictionary format'''
-    term_article_index_matches = get_term_matches_pp(search_term_index_vector,
-                                                     article_dict)
+    term_article_index_matches, term_searchindex_article_matches, page_matches = get_term_matches_pp(search_term_index_vector, article_dict)
     array_first_occurences = get_array_first_occurences(
-                                                    term_article_index_matches)
+                                                    term_searchindex_article_matches)
     match_occur_dict = {
         'matches': term_article_index_matches,
+        'page_matches': page_matches,
         'first': array_first_occurences,
+        'index_searchterms': term_searchindex_article_matches
         }
     return match_occur_dict
 
@@ -120,5 +114,10 @@ def get_articledict_and_matchesdict(pdf_path, excel_path):
     match_occur_dict = get_match_occur_dict(article_dict,
                                             search_term_index_vector)
     article_dict["matches"] = match_occur_dict["matches"]
+    article_dict["page_matches"] = match_occur_dict["page_matches"]
     article_dict["first"] = match_occur_dict["first"]
+    article_dict["index_searchterms"] = match_occur_dict["index_searchterms"]
     return article_dict, match_occur_dict
+
+
+x=get_articledict_and_matchesdict(pdf_path, excel_path)

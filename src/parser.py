@@ -8,7 +8,7 @@ from pdfminer.pdfparser import PDFParser
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.converter import PDFPageAggregator
 from pdfminer.layout import LAParams
-
+import re
 import sys
 
 
@@ -46,9 +46,11 @@ def analysis(pdf_file_path):
                 for y in x:
                     text = y.get_text()
                     word = ""
+                    # Coordinates are: x1, y1, x2, y2
+                    # Which make a rectangular selection to highlight the text
                     cords = []
                     for z in y:	 # for each letter
-                        if (z.get_text() != " "):
+                        if re.match('[A-Za-z]', (z.get_text())):
                             word += z.get_text()
                             try:
                                 cords.append(z.bbox)
