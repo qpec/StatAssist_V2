@@ -5,7 +5,7 @@ import pandas as pd
 '''
 should format information into a card containing:
  ___________________________
-|3 found occurences on page |--> equal to the len of index in dict
+|3 found matches    on page |--> equal to the len of index in dict
 |                           |
 |P value(1)   (2)INFERENTIAL|-->(1) found in [1] (2) in [4]
 |What is it: Threshold value|-->found in excel dictionary [2]
@@ -22,12 +22,18 @@ should format information into a card containing:
 def narrate_translation(pdf_path, excel_path):
     translation = translate_for_narration(pdf_path, excel_path)
     statguide = pd.read_excel(excel_path)
+    term_guide_index = 1
+    category_guide_index = 2
+    what_guide_index = 3
+    important_guide_index = 4
+    image_guide_index = 5
     narrative = [[] for page in translation]
     for page in translation:
         for term in page:
             term = page[term]
             found_occurences = len(term)
-            occurences_card_item = str(found_occurences) + "matches for"
+            occurences_carditem = str(found_occurences) + "matches on page for"
+            title_term_carditem = statguide[]
 
 
 narrate_translation(pdf_path, excel_path)

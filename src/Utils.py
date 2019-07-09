@@ -6,6 +6,7 @@ import io
 import fitz
 import pdfplumber
 
+
 def get_plumber_pdf_txt_pp(pdf_path):
     with pdfplumber.open(pdf_path) as pdf:
         text_pp = []
@@ -13,14 +14,16 @@ def get_plumber_pdf_txt_pp(pdf_path):
             text_pp.append(page.extract_text(x_tolerance=0.5))
     return text_pp
 
+
 def cleaner(text):
     text = text.lower()
     text = unidecode(text)
-    text = re.sub(r'-\n', ' ', text)
-    text = re.sub(r'\n', ' ', text)
-    text = re.sub(r'\'', '', text)
-    text = re.sub(r' +', ' ', text)
+    text = re.sub(r"-\n", " ", text)
+    text = re.sub(r"\n", " ", text)
+    text = re.sub(r"\'", "", text)
+    text = re.sub(r" +", " ", text)
     return text
+
 
 def get_pdf_text_pp(pdf_path):
     text_pp = []

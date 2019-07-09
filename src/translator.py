@@ -1,8 +1,9 @@
-'''This module modifies matcher results to be implemented for the
+"""This module modifies matcher results to be implemented for the
 narrator module. It specifies on which pages terms occur and where
-said term is located'''
+said term is located"""
 
 from src.matcher import get_articledict_and_matchesdict
+
 
 def remove_duplicates_list(lst):
     clean_list = []
@@ -11,16 +12,18 @@ def remove_duplicates_list(lst):
             clean_list.append(item)
     return clean_list
 
+
 def get_highlight_boxes_pp(article_dict):
     coordinates = article_dict["coordinates"]
     total_pages = article_dict["total_pages"]
     wordindex_to_page = article_dict["pages"]
     matches = article_dict["matches"]
 
+
 def cord_evaluator(coordinate_list):
     # Coordinates are: x1, y1, x2, y2
     y_deviation = False
-    if len(coordinate_list)>1:
+    if len(coordinate_list) > 1:
         x1 = []
         x2 = []
         y1 = []
@@ -45,7 +48,8 @@ def cord_evaluator(coordinate_list):
 
 def translate_for_narration(pdf_path, excel_path):
     article_dict, search_term_index_vector = get_articledict_and_matchesdict(
-            pdf_path, excel_path)
+        pdf_path, excel_path
+    )
     words = article_dict["words"]
     coordinates = article_dict["coordinates"]
     total_pages = article_dict["total_pages"]
@@ -53,7 +57,7 @@ def translate_for_narration(pdf_path, excel_path):
     matches = article_dict["matches"]
     first_occurences = article_dict["first"]
     # translation has structure: {'search_term_index':(fo, cords)}
-    translation = [{} for i in range(total_pages+1)]
+    translation = [{} for i in range(total_pages + 1)]
     for i in range(len(matches)):
         match = matches[i]
 

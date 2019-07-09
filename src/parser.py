@@ -1,6 +1,6 @@
-'''This should be the main pdf reader module, it reads the pdf
+"""This should be the main pdf reader module, it reads the pdf
 and returns a dictionary with all words, their respective
-coordinates, and the page their on.'''
+coordinates, and the page their on."""
 
 from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfpage import PDFPage
@@ -41,23 +41,25 @@ def analysis(pdf_file_path):
         interpreter.process_page(page)
         layout = device.get_result()
         for x in layout:
-            if (type(x).__name__ == "LTTextBoxHorizontal" or
-                    type(x).__name__ == "LTTextBoxVertical"):
+            if (
+                type(x).__name__ == "LTTextBoxHorizontal"
+                or type(x).__name__ == "LTTextBoxVertical"
+            ):
                 for y in x:
                     text = y.get_text()
                     word = ""
                     # Coordinates are: x1, y1, x2, y2
                     # Which make a rectangular selection to highlight the text
                     cords = []
-                    for z in y:	 # for each letter
-                        if re.match('[A-Za-z]', (z.get_text())):
+                    for z in y:  # for each letter
+                        if re.match("[A-Za-z]", (z.get_text())):
                             word += z.get_text()
                             try:
                                 cords.append(z.bbox)
                             except:
                                 continue
                         else:
-                            if (word != ""):
+                            if word != "":
                                 words.append(word)
                                 pages.append(idx)
                                 # TODO fix only last letter highlighting
@@ -66,5 +68,9 @@ def analysis(pdf_file_path):
 
     print("Word analysis completed...")
     f.close()
-    return {"words": words, "pages": pages, "coordinates": coordinates,
-            "total_pages": idx}
+    return {
+        "words": words,
+        "pages": pages,
+        "coordinates": coordinates,
+        "total_pages": idx,
+    }
