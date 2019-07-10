@@ -26,7 +26,7 @@ def narrate_translation(pdf_path, excel_path):
     term_column = statguide_columns[1]
     category_column = statguide_columns[2]
     what_column = statguide_columns[3]
-    important_column = statguide_columns[4]
+    important_column = statguide_columns[0]
     image_column = statguide_columns[5]
 
     narrative = []
@@ -36,7 +36,8 @@ def narrate_translation(pdf_path, excel_path):
         for term_index in page:
             terms = page[term_index]
             found_occurences = len(terms)
-            occurences_carditem = str(found_occurences) + " matches on page for"
+
+            occurences_carditem = found_occurences
             title_term_carditem = statguide[term_column][term_index]
             category_carditem = statguide[category_column][term_index]
             what_carditem = statguide[what_column][term_index]
@@ -61,6 +62,7 @@ def narrate_translation(pdf_path, excel_path):
                 'term': title_term_carditem,
                 'category': category_carditem,
                 'what': what_carditem,
+                'important': important_carditem,
                 'image': image_carditem,
             }
 
