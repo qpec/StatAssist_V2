@@ -34,6 +34,8 @@ def paint_card(card_content):
     ))
 
     # access the content
+
+    full_text_bool = card_content["first"]
     term = card_content["term"]
     what = '<b>What it is. </b>' + str(card_content["what"])
     important = '<b>Important. </b>' + str(card_content["important"])

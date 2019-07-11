@@ -47,7 +47,7 @@ def cord_evaluator(coordinate_list):
 
 
 def translate_for_narration(pdf_path, excel_path):
-    article_dict, search_term_index_vector = get_articledict_and_matchesdict(
+    article_dict = get_articledict_and_matchesdict(
         pdf_path, excel_path
     )
     words = article_dict["words"]
