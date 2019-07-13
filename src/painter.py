@@ -13,6 +13,15 @@ from pandas import isna
 
 def paint_card(card_content):
     # instantiate color configurations etc
+    back_col = colors.HexColor(color_scheme['back_col'])
+    fore_col = colors.HexColor(color_scheme['fore_col'])
+    text_col = colors.HexColor(color_scheme['text_col'])
+    textfade_col = colors.HexColor(color_scheme['textfade_col'])
+    high1full_col = colors.HexColor(color_scheme['high1full_col'])
+    high1fade_col = colors.HexColor(color_scheme['high1fade_col'])
+    high2full_col = colors.HexColor(color_scheme['high2full_col'])
+    high2fade_col = colors.HexColor(color_scheme['high2fade_col'])
+
     paragraph_styles = getSampleStyleSheet()
     paragraph_styles.add(
         ParagraphStyle(
@@ -20,7 +29,7 @@ def paint_card(card_content):
             fontName="Helvetica-Bold",
             fontSize=22,
             alignment=TA_LEFT,
-            textColor="black",
+            textColor=text_col,
             leading=23,
     ))
     paragraph_styles.add(
@@ -29,7 +38,7 @@ def paint_card(card_content):
             fontName="Helvetica",
             fontSize=10.5,
             alignment=TA_JUSTIFY,
-            textColor="black",
+            textColor=text_col,
             leading=11,
     ))
 
@@ -77,15 +86,6 @@ def paint_card(card_content):
             data.append([imp_paragraph])
         '''if image:
             data.append(['', image])'''
-
-    back_col = colors.HexColor(color_scheme['back_col'])
-    fore_col = colors.HexColor(color_scheme['fore_col'])
-    text_col = colors.HexColor(color_scheme['text_col'])
-    textfade_col = colors.HexColor(color_scheme['textfade_col'])
-    high1full_col = colors.HexColor(color_scheme['high1full_col'])
-    high1fade_col = colors.HexColor(color_scheme['high1fade_col'])
-    high2full_col = colors.HexColor(color_scheme['high2full_col'])
-    high2fade_col = colors.HexColor(color_scheme['high2fade_col'])
 
     card = Table(
         data,

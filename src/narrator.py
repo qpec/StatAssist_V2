@@ -24,7 +24,7 @@ def narrate_translation(pdf_path, excel_path):
     statguide_columns = statguide.columns
     term_column = statguide_columns[1]
     category_column = statguide_columns[2]
-    what_column = statguide_columns[3]
+    what_column = statguide_columns[2]
     important_column = statguide_columns[6]
     image_column = statguide_columns[4]
 
