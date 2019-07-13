@@ -33,9 +33,10 @@ def paint_card(card_content):
             leading=11,
     ))
 
-    # access the content
 
-    full_text_bool = card_content["first"]
+    # access the content
+    first_occurence = card_content["first"]
+    first_page = card_content["first_page"]
     term = card_content["term"]
     what = '<b>What it is. </b>' + str(card_content["what"])
     important = '<b>Important. </b>' + str(card_content["important"])
@@ -64,15 +65,18 @@ def paint_card(card_content):
     else:
         image = '''
 
-    data = [
-        ["", term_paragraph],
-        ["", what_paragraph],
-    ]
-    #for development if important not in cell
-    if imp_paragraph:
-        data.append(["", imp_paragraph])
-    '''if image:
-        data.append(['', image])'''
+    data = []
+    if not first_occurence:
+        second_occur = 'for <b>' + term + "</b> see page " + str(first_page+1)
+        second_occur_paragraph = Paragraph(second_occur, paragraph_styles["What"])
+        data.append([second_occur_paragraph])
+    else:
+        data.append([term_paragraph])
+        data.append([what_paragraph])
+        if imp_paragraph:
+            data.append([imp_paragraph])
+        '''if image:
+            data.append(['', image])'''
 
     back_col = colors.HexColor(color_scheme['back_col'])
     fore_col = colors.HexColor(color_scheme['fore_col'])
@@ -85,15 +89,14 @@ def paint_card(card_content):
 
     card = Table(
         data,
-        colWidths=(4, card_width),
+        colWidths=(card_width),
         style=[
             ("BACKGROUND", (0, 0), (-1, -1), fore_col),
-            ("BACKGROUND", (0, 0), (0, -1), high1full_col),
-            ("LEFTPADDING", (1, 0), (1, -1), 10),
-            ("TOPPADDING", (1, 0), (1, 0), 5),
-            ("BOTTOMPADDING", (1, -1), (1, -1), 0),
-            ("RIGHTPADDING", (1,0), (1,-1), 13),
-            ("BOTTOMPADDING", (1, -1), (1, -1), 10),
+            ("BOX", (0, 0), (-1, -1), 10, fore_col),
+            ("LEFTPADDING", (0, 0), (0, -1), 8),
+            ("TOPPADDING", (0, 0), (0, 0), 4),
+            ("BOTTOMPADDING", (0, -1), (0, -1), 8),
+            ("RIGHTPADDING", (0,0), (0,-1), 8),
         ],
     )
     return card

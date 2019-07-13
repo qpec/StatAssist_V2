@@ -20,24 +20,26 @@ should format information into a card containing:
 
 
 def narrate_translation(pdf_path, excel_path):
-    translation = translate_for_narration(pdf_path, excel_path)
     statguide = pd.read_excel(excel_path)
     statguide_columns = statguide.columns
     term_column = statguide_columns[1]
     category_column = statguide_columns[2]
-    what_column = statguide_columns[2]
+    what_column = statguide_columns[3]
     important_column = statguide_columns[6]
     image_column = statguide_columns[4]
 
-    narrative = []
+    page_highlights = []
+    page_cards_content = []
 
-    for page in translation:
-        this_page_narrative = []
+    translation = translate_for_narration(pdf_path, excel_path)
+    for page_i in range(len(translation)):
+        page = translation[page_i]
+        this_page_highlights = []
+        this_page_cards_content = []
+
         for term_index in page:
-            terms = page[term_index]
-            found_occurences = len(terms)
+            plotitems = page[term_index]
 
-            occurences_carditem = found_occurences
             title_term_carditem = statguide[term_column][term_index]
             category_carditem = statguide[category_column][term_index]
             what_carditem = statguide[what_column][term_index]
@@ -45,34 +47,33 @@ def narrate_translation(pdf_path, excel_path):
             image_carditem = statguide[image_column][term_index]
 
             coordinates = []
-            first_occurences = []
-            for term in terms:
-                first_occurences.append(term[1])
-                coordinates.append(term[2])
+            fo = []
+            for plotitem in plotitems:
+                fo.append(plotitem[1])
+                coordinates.append(plotitem[3])
+            highlights = tuple(zip(fo, coordinates))
 
-            if any(first_occurences):
-                first_page_occurrence = True
+            '''this here checks if any highlight in the searchindex is True,
+            meaning, it is a first page occurence'''
+            if any(fo):
+                first_occurence = True
             else:
-                first_page_occurrence = False
+                first_occurence = False
+
+            first_page = plotitems[0][2]
 
             # Here the formatting for the output card and highlight gets established
             term_card_content = {
-                'first': first_page_occurrence,
-                'len_matches': occurences_carditem,
+                'first': first_occurence,
+                'first_page': first_page,
                 'term': title_term_carditem,
-                'category': category_carditem,
                 'what': what_carditem,
                 'important': important_carditem,
                 'image': image_carditem,
             }
+            this_page_highlights.append(highlights)
+            this_page_cards_content.append(term_card_content)
+        page_highlights.append(this_page_highlights)
+        page_cards_content.append(this_page_cards_content)
 
-            highlights = tuple(zip(first_occurences, coordinates))
-
-            cardcontent_highlights = {
-                'term_card_content': term_card_content,
-                'term_highlights': highlights,
-            }
-            this_page_narrative.append(cardcontent_highlights)
-        narrative.append(this_page_narrative)
-
-    return narrative
+    return page_cards_content, page_highlights

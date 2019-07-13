@@ -2,7 +2,6 @@
 search_queries in the first column. The matched words or collocations
 will be returned in a dictionary"""
 
-from src.Config import pdf_path, excel_path
 from src.parser import analysis
 from nltk import SnowballStemmer
 import pandas as pd
@@ -77,58 +76,53 @@ def get_term_matches_pp(search_term_index_vector, article_dict):
                 term_article_index_matches.append(this_match_indexes)
                 page_matches.append(this_match_pages)
                 term_searchindex_article_matches.append(i)
+
+    tuple_lists = list(zip(term_article_index_matches, term_searchindex_article_matches, page_matches))
+    tuple_lists2 = sorted(tuple_lists, key=lambda x: x[0])
+    list_lists = [list(t) for t in zip(*tuple_lists2)]
+
+    term_article_index_matches = list_lists[0]
+    term_searchindex_article_matches = list_lists[1]
+    page_matches = list_lists[2]
     return term_article_index_matches, term_searchindex_article_matches, page_matches
 
 
-def get_array_first_occurences(term_searchindex_article_matches):
+def get_array_first_occurences(term_searchindex_article_matches, term_article_index_matches, page_matches):
     """A feature of StatAssist is to only display
     the fist occurence of a term in the sidebar
     with a explanation, here this is evaluated"""
     occurred = []
-    mirror_first_ocurrences = []
-    for match in term_searchindex_article_matches:
-        if match not in occurred:
-            mirror_first_ocurrences.append(True)
-            occurred.append(match)
+    match_page_fo = {}
+    page_of_occurence = [lst[0] for lst in page_matches]
+    occurence_tuples = []
+    for match_i in range(len(term_searchindex_article_matches)):
+        search_match = term_searchindex_article_matches[match_i]
+        article_match = term_article_index_matches[match_i]
+        this_page = page_of_occurence[match_i]
+
+        if search_match not in occurred:
+            match_page_fo[search_match] = this_page
+            first_occurence_page = this_page
+            #returning tuple (search_match, article_match, first?, first_occurence_page)
+            occurence_tuple = (search_match, article_match, True, first_occurence_page, this_page)
+            occurred.append(search_match)
         else:
-            mirror_first_ocurrences.append(False)
-    return mirror_first_ocurrences
+            first_occurence_page = match_page_fo[search_match]
+            #returning tuple (search_match, article_match, first?, first_occurence_page)
+            occurence_tuple = (search_match, article_match, False, first_occurence_page, this_page)
+
+        occurence_tuples.append(occurence_tuple)
+
+    return occurence_tuples
 
 
-def get_pagenum_of_first_occur_vector(array_first_occurences, matches, page_matches):
-    first_index_page = []
-    for i in range(len(matches)):
-        if not array_first_occurences[i]:
-            first_index_page.append(page_matches[i][0])  # link goes to first page hence zero
-        else:
-            first_index_page.append(True)
-    return first_index_page
-
-def get_match_occur_dict(article_dict, search_term_index_vector):
-    """returns package in dictionary format"""
+def get_articledict_and_occurencetuple(pdf_path, excel_path):
+    search_term_index_vector = get_search_terms(excel_path)
+    article_dict = analysis(pdf_path)
     term_article_index_matches, term_searchindex_article_matches, page_matches = get_term_matches_pp(
         search_term_index_vector, article_dict
     )
-    array_first_occurences = get_array_first_occurences(
-        term_searchindex_article_matches
+    occurence_tuples = get_array_first_occurences(
+        term_searchindex_article_matches, term_article_index_matches, page_matches
     )
-    first_index_page = get_pagenum_of_first_occur_vector(array_first_occurences, term_article_index_matches, page_matches)
-    match_occur_dict = {
-        "matches": term_article_index_matches,
-        "page_matches": page_matches,
-        "first": array_first_occurences,
-        "first_index": first_index_page,
-        "index_searchterms": term_searchindex_article_matches,
-    }
-    return match_occur_dict
-
-def get_articledict_and_matchesdict(pdf_path, excel_path):
-    search_term_index_vector = get_search_terms(excel_path)
-    article_dict = analysis(pdf_path)
-    match_occur_dict = get_match_occur_dict(article_dict, search_term_index_vector)
-    article_dict["matches"] = match_occur_dict["matches"]
-    article_dict["page_matches"] = match_occur_dict["page_matches"]
-    article_dict["first"] = match_occur_dict["first"]
-    article_dict["index_searchterms"] = match_occur_dict["index_searchterms"]
-    article_dict["first_index"] = match_occur_dict["first_index"]
-    return article_dict
+    return article_dict, occurence_tuples

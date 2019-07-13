@@ -1,8 +1,8 @@
 """This module modifies matcher results to be implemented for the
 narrator module. It specifies on which pages terms occur and where
 said term is located"""
-
-from src.matcher import get_articledict_and_matchesdict
+from src.Config import excel_path, pdf_path, output_pdf_path
+from src.matcher import get_articledict_and_occurencetuple
 
 
 def remove_duplicates_list(lst):
@@ -47,64 +47,41 @@ def cord_evaluator(coordinate_list):
 
 
 def translate_for_narration(pdf_path, excel_path):
-    article_dict = get_articledict_and_matchesdict(
+    article_dict, occurence_tuples = get_articledict_and_occurencetuple(
         pdf_path, excel_path
     )
+
+    # from article dict
     words = article_dict["words"]
     coordinates = article_dict["coordinates"]
     total_pages = article_dict["total_pages"]
-    page_matches = article_dict["page_matches"]
-    matches = article_dict["matches"]
-    first_occurences = article_dict["first"]
+
     # translation has structure: {'search_term_index':(fo, cords)}
-    translation = [{} for i in range(total_pages + 1)]
-    for i in range(len(matches)):
-        match = matches[i]
+    translations = [{} for i in range(total_pages+1)]
+    for i in range(len(occurence_tuples)):
+        search_match = occurence_tuples[i][0]
+        article_match = occurence_tuples[i][1]
+        first_occurence = occurence_tuples[i][2]
+        page_first_occurence = occurence_tuples[i][3]
+        this_page = occurence_tuples[i][4]
 
         # get the article match (only for debugging)
-        article_match = []
-        for index in match:
-            article_match.append(words[index])
-        article_match = " ".join(article_match)
+        article_string_match = []
+        for index in article_match:
+            article_string_match.append(words[index])
+        article_string_match = " ".join(article_string_match)
 
-        # get the index of the term in the searchquery
-        search_match = article_dict["index_searchterms"][i]
-        # check if this is the first_occurence
-        fo = first_occurences[i]
         # get the coordinates of bbox of specified term
-
         cords = []
-        for index in match:
+        for index in article_match:
             cords.append(coordinates[index])
 
-        article_match = []
-        for index in match:
-            article_match.append(words[index])
+        plotitem = (article_string_match, first_occurence, page_first_occurence, cords)
 
-        this_match_page_matches = page_matches[i]
-        unique_pages = remove_duplicates_list(this_match_page_matches)
-        multiple_pages = False
-        if len(unique_pages) > 1:
-            multiple_pages == True
-
-        # here it is taken into account that it is possible that a term
-        # is split up to multiple pages plotpoint get split
-        if multiple_pages:
-            for page in range(len(this_match_page_matches)):
-                plotitem = (article_match[i][page], fo, cords[i][page])
-                if search_match not in translation[page]:
-                    translation[page][search_match] = [plotitem]
-                else:
-                    translation[page][search_match].append(plotitem)
+        if search_match not in translations[this_page]:
+                translations[this_page][search_match] = [plotitem]
         else:
-            page = this_match_page_matches[0]
-            cords = cord_evaluator(cords)
-            article_match = " ".join(article_match)
-            plotitem = (article_match, fo, cords)
-            if search_match not in translation[page]:
-                translation[page][search_match] = [plotitem]
-            else:
-                translation[page][search_match].append(plotitem)
+            translations[this_page][search_match].append(plotitem)
     # translation has structure: {'search_term_index':(fo, cords)}
     # with multiple dictionaries, indexed to page
-    return translation
+    return translations
