@@ -2,6 +2,7 @@
 and returns a dictionary with all words, their respective
 coordinates, and the page their on."""
 
+from src.Config import highlight_margin
 from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
@@ -11,7 +12,30 @@ from pdfminer.layout import LAParams
 import re
 import sys
 
-
+def cord_evaluator(coordinate_list, highlight_margin=highlight_margin):
+    # Coordinates are: x1, y1, x2, y2
+    y_deviation = False
+    if len(coordinate_list) > 1:
+        x1 = []
+        x2 = []
+        y1 = []
+        y2 = []
+        for cords in coordinate_list:
+            x1.append(cords[0])
+            x2.append(cords[2])
+            y1.append(cords[1] - highlight_margin)
+            y2.append(cords[3] + highlight_margin)
+        if y1[0] != y1[-1]:
+            y_deviation = True
+        if y_deviation:
+            # here can insert function that evaluates initial
+            # two words or more that are on the same line
+            return coordinate_list[0]
+        else:
+            new_cords = (min(x1), min(y1), max(x2), max(y2))
+            return new_cords
+    else:
+        return coordinate_list[0]
 # Explanation of analysis:
 # 1. Read PDF File
 # 2. For each page of PDF file
@@ -52,7 +76,7 @@ def analysis(pdf_file_path):
                     # Which make a rectangular selection to highlight the text
                     cords = []
                     for z in y:  # for each letter
-                        if re.match("[A-Za-z]", (z.get_text())):
+                        if z.get_text().isalpha():
                             word += z.get_text()
                             try:
                                 cords.append(z.bbox)
@@ -63,8 +87,9 @@ def analysis(pdf_file_path):
                                 words.append(word)
                                 pages.append(idx)
                                 # TODO fix only last letter highlighting
-                                coordinates.append(cords[-1])
+                                coordinates.append(cord_evaluator(cords))
                                 word = ""
+                                cords = []
 
     print("Word analysis completed...")
     f.close()

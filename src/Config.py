@@ -4,6 +4,8 @@ excel_path = os.path.abspath("input/StatGuide.xlsx")
 pdf_path = os.path.abspath("input/test.pdf")
 output_pdf_path = os.path.abspath("output/")
 
+highlight_margin = 1
+
 color_scheme = {
     'back_col':'#B8B2A6',
     'fore_col':'#F6F4EA',

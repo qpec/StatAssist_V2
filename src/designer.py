@@ -7,6 +7,12 @@ from src.painter import paint_card
 from reportlab.platypus import Spacer, Frame
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib import colors
+from io import StringIO
+from PyPDF2 import PdfFileWriter, PdfFileReader
+from reportlab.graphics.shapes import Rect
+from pdfrw.buildxobj import pagexobj
+from pdfrw.toreportlab import makerl
+from pdfrw import PdfReader
 
 def article_highlighter():
     pass
@@ -24,23 +30,48 @@ def build_blueprint(pdf_path, excel_path, output_pdf_path, pdf_name='pdf_name.pd
     back_col = colors.HexColor(color_scheme['back_col'])
     fore_col = colors.HexColor(color_scheme['fore_col'])
     text_col = colors.HexColor(color_scheme['text_col'])
+    white = colors.white
     textfade_col = colors.HexColor(color_scheme['textfade_col'])
     high1full_col = colors.HexColor(color_scheme['high1full_col'])
     high1fade_col = colors.HexColor(color_scheme['high1fade_col'])
     high2full_col = colors.HexColor(color_scheme['high2full_col'])
     high2fade_col = colors.HexColor(color_scheme['high2fade_col'])
 
-    page_cards_content, page_highlights = narrate_translation(pdf_path, excel_path)
-
+    # import the required content/highlight locations
+    page_cards_content, pages_highlights = narrate_translation(pdf_path, excel_path)
     full_page_width = a4_width + sidebar_width + 3*margins
+
+    # instantiate visual object of original article to highlight with rects
+    original_article = PdfReader(pdf_path)
+    original_article_pages = [page for page in original_article.pages]
     c = Canvas(output_pdf_path + pdf_name, pagesize=(full_page_width, a4_height+2*margins))
+
     for page_i in range(len(page_cards_content)):
+        # sidebar background color
+        c.setFillColor(white)
+        c.rect(0, 0, a4_width + sidebar_width + 3*margins, a4_height+2*margins, stroke=0, fill=1)
+        # first paste the original pdf on the canvas
+        original_article_page = pagexobj(original_article_pages[page_i])
+        #c.doForm(makerl(c, original_article_page))
+
+        ''' this part deals with the highlight elements'''
+        for highlight in pages_highlights[page_i]:
+            highlight = highlight[0]
+            first = highlight[0]
+            cords = highlight[1]
+            x1 = cords[0]
+            y1 = cords[1]
+            x2 = cords[2]
+            y2 = cords[3]
+            if first:
+                c.setFillColor(high1full_col)
+            else:
+                c.setFillColor(high1fade_col)
+            c.rect(x1,y1,x2-x1,y2-y1, fill=True, stroke=False)
+        c.doForm(makerl(c, original_article_page))
+        '''this part deals with the sidebar elements'''
         # necessary for link to this page
         c.bookmarkPage(page_i)
-
-        # sidebar background color
-        c.setFillColor(text_col)
-        c.rect(0, 0, a4_width + sidebar_width + 3*margins, a4_height+2*margins, stroke=0, fill=1)
         sidebar = Frame(full_page_width - sidebar_width - margins*1.5, margins, sidebar_width, a4_height-margins, showBoundary=1)
         sidebar_story_page = []
         for card_content in page_cards_content[page_i]:

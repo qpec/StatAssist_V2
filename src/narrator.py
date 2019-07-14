@@ -51,7 +51,7 @@ def narrate_translation(pdf_path, excel_path):
             for plotitem in plotitems:
                 fo.append(plotitem[1])
                 coordinates.append(plotitem[3])
-            highlights = tuple(zip(fo, coordinates))
+            highlights = list(zip(fo, coordinates))
 
             '''this here checks if any highlight in the searchindex is True,
             meaning, it is a first page occurence'''

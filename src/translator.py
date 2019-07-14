@@ -74,7 +74,7 @@ def translate_for_narration(pdf_path, excel_path):
         # get the coordinates of bbox of specified term
         cords = []
         for index in article_match:
-            cords.append(coordinates[index])
+            cords.extend(coordinates[index])
 
         plotitem = (article_string_match, first_occurence, page_first_occurence, cords)
 
