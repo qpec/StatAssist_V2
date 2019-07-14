@@ -39,17 +39,25 @@ def build_blueprint(pdf_path, excel_path, output_pdf_path, pdf_name='pdf_name.pd
 
     # import the required content/highlight locations
     page_cards_content, pages_highlights = narrate_translation(pdf_path, excel_path)
-    full_page_width = a4_width + sidebar_width + 3*margins
+
 
     # instantiate visual object of original article to highlight with rects
     original_article = PdfReader(pdf_path)
     original_article_pages = [page for page in original_article.pages]
-    c = Canvas(output_pdf_path + pdf_name, pagesize=(full_page_width, a4_height+2*margins))
+    c = Canvas(output_pdf_path + pdf_name, pagesize=(a4_width + sidebar_width + (3*margins), a4_height+(2*margins)))
 
     for page_i in range(len(page_cards_content)):
-        # sidebar background color
-        c.setFillColor(white)
+        # draw background1
+        c.setFillColor(back_col)
         c.rect(0, 0, a4_width + sidebar_width + 3*margins, a4_height+2*margins, stroke=0, fill=1)
+        # draw white canvas for pdf
+        c.setFillColor(white)
+        c.roundRect(margins, margins, a4_width, a4_height, 5, stroke=0, fill=1)
+        # draw black canvas for frame sidebar
+        c.setFillColor(back_col)
+        c.rect(a4_width + 2*margins, margins, sidebar_width, a4_height, stroke=0, fill=1)
+        # sidebar frame
+        sidebar = Frame(a4_width + 2*margins, margins, sidebar_width, a4_height, showBoundary=1)
         # first paste the original pdf on the canvas
         original_article_page = pagexobj(original_article_pages[page_i])
         #c.doForm(makerl(c, original_article_page))
@@ -64,15 +72,15 @@ def build_blueprint(pdf_path, excel_path, output_pdf_path, pdf_name='pdf_name.pd
             x2 = cords[2]
             y2 = cords[3]
             if first:
-                c.setFillColor(high1full_col)
+                c.setFillColor(high2full_col)
             else:
-                c.setFillColor(high1fade_col)
-            c.rect(x1,y1,x2-x1,y2-y1, fill=True, stroke=False)
+                c.setFillColor(high2fade_col)
+            c.roundRect(x1,y1,x2-x1,y2-y1,1, fill=True, stroke=False)
         c.doForm(makerl(c, original_article_page))
         '''this part deals with the sidebar elements'''
         # necessary for link to this page
         c.bookmarkPage(page_i)
-        sidebar = Frame(full_page_width - sidebar_width - margins*1.5, margins, sidebar_width, a4_height-margins, showBoundary=1)
+
         sidebar_story_page = []
         for card_content in page_cards_content[page_i]:
             this_card = paint_card(card_content)
@@ -87,7 +95,7 @@ def build_blueprint(pdf_path, excel_path, output_pdf_path, pdf_name='pdf_name.pd
                 link_y.append(sidebar._y)
                 add_page_link(card_content['first_page'], link_y[0], link_y[1], c)
                 link_y.clear()
-            sidebar.add(Spacer(10,15), c)
+            sidebar.add(Spacer(10, margins + 10), c)
         c.showPage()
 
     c.save()

@@ -1,4 +1,4 @@
-from src.Config import color_scheme, card_width
+from src.Config import color_scheme, sidebar_width, margins
 from src.narrator import narrate_translation
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -41,26 +41,38 @@ def paint_card(card_content):
             textColor=text_col,
             leading=11,
     ))
+    paragraph_styles.add(
+        ParagraphStyle(
+            name="Repeat",
+            fontName="Helvetica",
+            fontSize=10.5,
+            alignment=TA_LEFT,
+            textColor=text_col,
+            leading=11,
+    ))
 
 
     # access the content
+    # Card 1
     first_occurence = card_content["first"]
     first_page = card_content["first_page"]
     term = card_content["term"]
-    what = '<b>What it is. </b>' + str(card_content["what"])
-    important = '<b>Important. </b>' + str(card_content["important"])
+    what = str(card_content["what"])
+    important = card_content["important"]
     image = card_content["image"]
-
-    # development
-    dummy = 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.'
 
     term_paragraph = Paragraph(str(term), paragraph_styles["Term"])
     what_paragraph = Paragraph(str(what), paragraph_styles["What"])
     #for development (when important is empty)
     if not isna(important):
-        imp_paragraph = Paragraph(str(important), paragraph_styles["What"])
+        imp_paragraph = Paragraph(str('<img src="input/inline_images/exclamation.png" valign=-1.5 width=10.5 height=10.5 /> ' + important), paragraph_styles["What"])
     else:
-        imp_paragraph = Paragraph(str(dummy), paragraph_styles["What"])
+        imp_paragraph = False
+
+
+    # Card 2
+    second_occur = 'Click here for <b>' + term + "</b> on page " + str(first_page+1)
+    second_occur_paragraph = Paragraph(second_occur, paragraph_styles["Repeat"])
 
     #later implementation of image carditem
     '''if not isna(image):
@@ -74,29 +86,35 @@ def paint_card(card_content):
     else:
         image = '''
 
-    data = []
+
+
+    card_data = []
+    card_styling=[
+        ("BACKGROUND", (0, 0), (-1, -1), fore_col),
+        ("VALIGN", (0, 0), (-1, 0), "TOP"),
+        ("LEFTPADDING", (2, 0), (2, -1), 8),
+        ("TOPPADDING", (2, 0), (2, 0), 4),
+        ("BOTTOMPADDING", (2, -1), (2, -1), 7),
+        ("RIGHTPADDING", (2,0), (2,-1), 8)]
+
+    column_1_2_width = 5
     if not first_occurence:
-        second_occur = 'for <b>' + term + "</b> see page " + str(first_page+1)
-        second_occur_paragraph = Paragraph(second_occur, paragraph_styles["What"])
-        data.append([second_occur_paragraph])
+        card_styling.append(("BOX", (0, 0), (-1, -1), 10, fore_col))
+        card_data.append(['', '', second_occur_paragraph])
+        column_1_2_width = 0
     else:
-        data.append([term_paragraph])
-        data.append([what_paragraph])
+        card_styling.append(("BACKGROUND", (1, 0), (1, -1), high2full_col))
+        card_styling.append(("BOX", (0, 0), (-1, -1), 10, fore_col))
+        card_data.append(['', '', term_paragraph])
+        card_data.append(['', '', what_paragraph])
         if imp_paragraph:
-            data.append([imp_paragraph])
+            card_data.append(['', '', imp_paragraph])
         '''if image:
-            data.append(['', image])'''
+            card_data.append(['', '', '', image])'''
 
     card = Table(
-        data,
-        colWidths=(card_width),
-        style=[
-            ("BACKGROUND", (0, 0), (-1, -1), fore_col),
-            ("BOX", (0, 0), (-1, -1), 10, fore_col),
-            ("LEFTPADDING", (0, 0), (0, -1), 8),
-            ("TOPPADDING", (0, 0), (0, 0), 4),
-            ("BOTTOMPADDING", (0, -1), (0, -1), 8),
-            ("RIGHTPADDING", (0,0), (0,-1), 8),
-        ],
+        card_data,
+        colWidths=(column_1_2_width, column_1_2_width, sidebar_width - margins - 2*column_1_2_width),
+        style=card_styling
     )
     return card

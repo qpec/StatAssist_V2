@@ -7,14 +7,14 @@ output_pdf_path = os.path.abspath("output/")
 highlight_margin = 1
 
 color_scheme = {
-    'back_col':'#B8B2A6',
-    'fore_col':'#F6F4EA',
-    'text_col':'#1F2226',
-    'textfade_col':'#3b4c54',
-    'high1full_col':'#ED6D23',
+    'back_col':'#3e4c57',
+    'fore_col':'#ffffff',
+    'text_col':'#262626',
+    'textfade_col':'#999999',
+    'high1full_col':'#3797f0',
     'high1fade_col':'#E8A78B',
     'high2full_col':'#FAA629',
-    'high2fade_col':'#F7CA94',
+    'high2fade_col':'#e6e6e6',
     'old_col1':'#EC4E3C',
     'old_col2':'#FFC638',
 }

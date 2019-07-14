@@ -21,8 +21,8 @@ def cord_evaluator(coordinate_list, highlight_margin=highlight_margin):
         y1 = []
         y2 = []
         for cords in coordinate_list:
-            x1.append(cords[0])
-            x2.append(cords[2])
+            x1.append(cords[0] - highlight_margin)
+            x2.append(cords[2] + highlight_margin)
             y1.append(cords[1] - highlight_margin)
             y2.append(cords[3] + highlight_margin)
         if y1[0] != y1[-1]:
