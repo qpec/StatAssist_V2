@@ -64,18 +64,39 @@ def build_blueprint(pdf_path, excel_path, output_pdf_path, pdf_name='pdf_name.pd
 
         ''' this part deals with the highlight elements'''
         for highlight in pages_highlights[page_i]:
-            highlight = highlight[0]
-            first = highlight[0]
-            cords = highlight[1]
-            x1 = cords[0]
-            y1 = cords[1]
-            x2 = cords[2]
-            y2 = cords[3]
-            if first:
-                c.setFillColor(high2full_col)
-            else:
-                c.setFillColor(high2fade_col)
-            c.roundRect(x1,y1,x2-x1,y2-y1,1, fill=True, stroke=False)
+            for items in highlight:
+                first = items[0]
+                boxes = items[1]
+                x1 = []
+                x2 = []
+                y1 = []
+                y2 = []
+                for box in boxes:
+                    x1.append(box[0])
+                    x2.append(box[1])
+                    y1.append(box[2])
+                    y2.append(box[3])
+                boxes = {}
+                for i in range(len(y2)):
+                    if y2[i] not in boxes:
+                        boxes[y2[i]] = [x1[i], x2[i], y1[i], y2[i]]
+                    else:
+                        old_box = boxes[y2[i]]
+                        new_x1 = min(old_box[0], x1[i])
+                        new_x2 = max(old_box[1], x2[i])
+                        new_y1 = min(old_box[2], y1[i])
+                        new_y2 = max(old_box[3], y2[i])
+                        boxes[y2[i]] = [new_x1, new_x2, new_y1, new_y2]
+                for box in boxes.values():
+                    x1 = box[0]
+                    x2 = box[1]
+                    y1 = box[2]
+                    y2 = box[3]
+                    if first:
+                        c.setFillColor(high2full_col)
+                    else:
+                        c.setFillColor(high2fade_col)
+                    c.roundRect(x1,y1,x2-x1,y2-y1,1, fill=True, stroke=False)
         c.doForm(makerl(c, original_article_page))
         '''this part deals with the sidebar elements'''
         # necessary for link to this page
@@ -88,6 +109,7 @@ def build_blueprint(pdf_path, excel_path, output_pdf_path, pdf_name='pdf_name.pd
             link_y = []
             if this_card._nrows <= 1:
                 # this is a repeated term
+
                 link_y.append(sidebar._y)
             sidebar.add(this_card, c)
 

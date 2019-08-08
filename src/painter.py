@@ -27,10 +27,10 @@ def paint_card(card_content):
         ParagraphStyle(
             name="Term",
             fontName="Helvetica-Bold",
-            fontSize=22,
+            fontSize=18,
             alignment=TA_LEFT,
             textColor=text_col,
-            leading=23,
+            leading=18,
     ))
     paragraph_styles.add(
         ParagraphStyle(

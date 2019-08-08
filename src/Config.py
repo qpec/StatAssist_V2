@@ -1,13 +1,13 @@
 import os
 
 excel_path = os.path.abspath("input/StatGuide.xlsx")
-pdf_path = os.path.abspath("input/test.pdf")
+pdf_path = os.path.abspath("input/example.pdf")
 output_pdf_path = os.path.abspath("output/")
 
 highlight_margin = 1
 
 color_scheme = {
-    'back_col':'#3e4c57',
+    'back_col':'#262626',
     'fore_col':'#ffffff',
     'text_col':'#262626',
     'textfade_col':'#999999',

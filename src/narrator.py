@@ -22,7 +22,7 @@ should format information into a card containing:
 def narrate_translation(pdf_path, excel_path):
     statguide = pd.read_excel(excel_path)
     statguide_columns = statguide.columns
-    term_column = statguide_columns[1]
+    term_column = statguide_columns[0]
     category_column = statguide_columns[2]
     what_column = statguide_columns[2]
     important_column = statguide_columns[6]

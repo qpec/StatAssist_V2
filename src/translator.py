@@ -12,40 +12,6 @@ def remove_duplicates_list(lst):
             clean_list.append(item)
     return clean_list
 
-
-def get_highlight_boxes_pp(article_dict):
-    coordinates = article_dict["coordinates"]
-    total_pages = article_dict["total_pages"]
-    wordindex_to_page = article_dict["pages"]
-    matches = article_dict["matches"]
-
-
-def cord_evaluator(coordinate_list):
-    # Coordinates are: x1, y1, x2, y2
-    y_deviation = False
-    if len(coordinate_list) > 1:
-        x1 = []
-        x2 = []
-        y1 = []
-        y2 = []
-        for cords in coordinate_list:
-            x1.append(cords[0])
-            x2.append(cords[2])
-            y1.append(cords[1])
-            y2.append(cords[3])
-        if y1[0] != y1[-1]:
-            y_deviation = True
-        if y_deviation:
-            # here can insert function that evaluates initial
-            # two words or more that are on the same line
-            return coordinate_list
-        else:
-            new_cords = [(min(x1), min(y1), max(x2), max(y2))]
-            return new_cords
-    else:
-        return coordinate_list
-
-
 def translate_for_narration(pdf_path, excel_path):
     article_dict, occurence_tuples = get_articledict_and_occurencetuple(
         pdf_path, excel_path
@@ -74,7 +40,7 @@ def translate_for_narration(pdf_path, excel_path):
         # get the coordinates of bbox of specified term
         cords = []
         for index in article_match:
-            cords.extend(coordinates[index])
+            cords.append(coordinates[index])
 
         plotitem = (article_string_match, first_occurence, page_first_occurence, cords)
 
@@ -85,3 +51,5 @@ def translate_for_narration(pdf_path, excel_path):
     # translation has structure: {'search_term_index':(fo, cords)}
     # with multiple dictionaries, indexed to page
     return translations
+
+x=translate_for_narration(pdf_path, excel_path)

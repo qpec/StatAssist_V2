@@ -6,9 +6,9 @@ from src.parser import analysis
 from nltk import SnowballStemmer
 import pandas as pd
 import regex as re
+from src.Config import excel_path, pdf_path
 
-
-def get_search_terms(excel_path, col=1, sublist_sep=","):
+def get_search_terms(excel_path, col=0, sublist_sep=","):
     """function that selects column in input excel
     for associated search queries and formats it
     to the appropriate search format.
@@ -40,7 +40,7 @@ def subfinder(mylist, pattern):
     matches = []
     for i in range(len(mylist)):
         if mylist[i] == pattern[0] and mylist[i : i + len(pattern)] == pattern:
-            matches.append([i, i + len(pattern) - 1])
+            matches.append([x + i for x in range(len(pattern))])
     return matches
 
 
@@ -51,22 +51,34 @@ def remove_duplicates_list(lst):
             clean_list.append(item)
     return clean_list
 
+def article_words_cleaner(article_words):
+    pass
 
-def get_term_matches_pp(search_term_index_vector, article_dict):
+def get_term_matches_pp(search_term_index_vector, proxy_searches, article_dict):
     """matches the search_terms to the input text
     returns a list of term index matches."""
     stemmer = SnowballStemmer("english")
-    search_terms = [stemmer.stem(term.lower()) for term in search_term_index_vector]
+    proxy_searches = [" ".join([stemmer.stem(t.lower()) for t in term.split()]) for term in proxy_searches]
+    search_terms = [" ".join([stemmer.stem(t.lower()) for t in term.split()]) for term in search_term_index_vector]
     article_words = [stemmer.stem(word.lower()) for word in article_dict["words"]]
     wordindex_to_page = article_dict["pages"]
     page_matches = []
     term_article_index_matches = []
     term_searchindex_article_matches = []
     for i in range(len(search_terms)):
-        term = search_terms[i].split()
-        group_matches = subfinder(article_words, term)
+        search = search_terms[i].split()
+        proxy = proxy_searches[i].split()
+        group_matches = subfinder(article_words, proxy)
         if group_matches:
-            for match in group_matches:
+            #proxy cut out
+            pco = subfinder(proxy, search)[0]
+            l = pco[0]
+            r = pco[-1]+1
+            if len(pco) > 1:
+                group_matches_unproxied = [match[l:r] for match in group_matches]
+            else:
+                group_matches_unproxied = [[match[l]] for match in group_matches]
+            for match in group_matches_unproxied:
                 this_match_indexes = []
                 this_match_pages = []
                 for index in match:
@@ -117,12 +129,14 @@ def get_array_first_occurences(term_searchindex_article_matches, term_article_in
 
 
 def get_articledict_and_occurencetuple(pdf_path, excel_path):
-    search_term_index_vector = get_search_terms(excel_path)
+    search_term_index_vector = get_search_terms(excel_path, col=0)
+    proxy_searches = get_search_terms(excel_path, col=1)
     article_dict = analysis(pdf_path)
     term_article_index_matches, term_searchindex_article_matches, page_matches = get_term_matches_pp(
-        search_term_index_vector, article_dict
+        search_term_index_vector, proxy_searches, article_dict
     )
     occurence_tuples = get_array_first_occurences(
         term_searchindex_article_matches, term_article_index_matches, page_matches
     )
     return article_dict, occurence_tuples
+x=get_articledict_and_occurencetuple(pdf_path, excel_path)

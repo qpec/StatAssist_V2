@@ -2,7 +2,8 @@
 and returns a dictionary with all words, their respective
 coordinates, and the page their on."""
 
-from src.Config import highlight_margin
+from unidecode import unidecode
+from src.Config import highlight_margin, pdf_path
 from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
@@ -21,10 +22,10 @@ def cord_evaluator(coordinate_list, highlight_margin=highlight_margin):
         y1 = []
         y2 = []
         for cords in coordinate_list:
-            x1.append(cords[0] - highlight_margin)
-            x2.append(cords[2] + highlight_margin)
-            y1.append(cords[1] - highlight_margin)
-            y2.append(cords[3] + highlight_margin)
+            x1.append(cords[0])
+            x2.append(cords[2])
+            y1.append(cords[1])
+            y2.append(cords[3])
         if y1[0] != y1[-1]:
             y_deviation = True
         if y_deviation:
@@ -32,7 +33,7 @@ def cord_evaluator(coordinate_list, highlight_margin=highlight_margin):
             # two words or more that are on the same line
             return coordinate_list[0]
         else:
-            new_cords = (min(x1), min(y1), max(x2), max(y2))
+            new_cords = (min(x1), max(x2), min(y1), max(y2))
             return new_cords
     else:
         return coordinate_list[0]
@@ -71,12 +72,11 @@ def analysis(pdf_file_path):
             ):
                 for y in x:
                     text = y.get_text()
+
                     word = ""
-                    # Coordinates are: x1, y1, x2, y2
-                    # Which make a rectangular selection to highlight the text
                     cords = []
                     for z in y:  # for each letter
-                        if z.get_text().isalpha():
+                        if re.match(r'[^ \n\)\(,\.\[\]\d]', z.get_text()):
                             word += z.get_text()
                             try:
                                 cords.append(z.bbox)
@@ -84,13 +84,15 @@ def analysis(pdf_file_path):
                                 continue
                         else:
                             if word != "":
-                                words.append(word)
+                                words.append(unidecode(word))
                                 pages.append(idx)
                                 # TODO fix only last letter highlighting
                                 coordinates.append(cord_evaluator(cords))
                                 word = ""
                                 cords = []
 
+
+    #cleaning words and items from words and cords list
     print("Word analysis completed...")
     f.close()
     return {
